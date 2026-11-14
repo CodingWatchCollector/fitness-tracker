@@ -1,0 +1,160 @@
+:root {
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --text: #f2f2f2;
+  --muted: #a8a8a8;
+  --accent: #4cc2ff;
+  --tap: 48px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.4;
+}
+
+a {
+  color: var(--accent);
+}
+
+.app-header {
+  background: var(--surface);
+  padding: 0 16px;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.app-main {
+  padding: 16px;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.status-message {
+  padding: 16px;
+}
+
+.button {
+  min-height: var(--tap);
+  padding: 0 20px;
+  font: inherit;
+  color: var(--bg);
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+}
+
+.exercise-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.exercise-row-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-row-meta {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.thumb {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
+.detail-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.detail-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.placeholder {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+}
+
+.fields dt {
+  color: var(--muted);
+}
+
+.fields dd {
+  margin: 0;
+}
+
+.video-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}

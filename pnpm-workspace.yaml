@@ -1,0 +1,6 @@
+overrides:
+  workbox-build: 7.4.0
+  'rollup@^2': 2.79.2
+allowBuilds:
+  esbuild: true
+  workerd: true

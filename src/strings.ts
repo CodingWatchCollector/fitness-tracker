@@ -1,0 +1,93 @@
+import type {
+  Apparatus,
+  ExerciseType,
+  LoadDirection,
+  MovementPattern,
+  Muscle,
+  Phase,
+} from './data';
+
+const labels = {
+  exerciseType: { rep: 'Reps', time: 'Time' } satisfies Record<ExerciseType, string>,
+  pattern: {
+    push: 'Push',
+    pull: 'Pull',
+    legs: 'Legs',
+    core: 'Core',
+    skill: 'Skill',
+    none: 'General',
+  } satisfies Record<MovementPattern, string>,
+  phase: { 'warm-up': 'Warm-up', 'main': 'Main' } satisfies Record<Phase, string>,
+  loadDirection: {
+    harder: 'More load is harder',
+    easier: 'More load is easier',
+  } satisfies Record<LoadDirection, string>,
+  apparatus: {
+    'floor': 'Floor',
+    'bar': 'Bar',
+    'rings': 'Rings',
+    'dip station': 'Dip station',
+  } satisfies Record<Apparatus, string>,
+  muscle: {
+    'abs': 'Abs',
+    'abductors': 'Abductors',
+    'adductors': 'Adductors',
+    'biceps': 'Biceps',
+    'calves': 'Calves',
+    'chest': 'Chest',
+    'forearms': 'Forearms',
+    'glutes': 'Glutes',
+    'hamstrings': 'Hamstrings',
+    'hip flexors': 'Hip flexors',
+    'lats': 'Lats',
+    'lower back': 'Lower back',
+    'middle back': 'Middle back',
+    'neck': 'Neck',
+    'quads': 'Quads',
+    'front delts': 'Front delts',
+    'side delts': 'Side delts',
+    'rear delts': 'Rear delts',
+    'traps': 'Traps',
+    'triceps': 'Triceps',
+  } satisfies Record<Muscle, string>,
+};
+
+export const strings = {
+  appName: 'Fitness Tracker',
+  back: 'Back to exercises',
+  none: 'None',
+  seconds: (n: number) => `${n} s`,
+  status: {
+    loading: 'Loading...',
+    error: 'Something went wrong. Reload the page to try again.',
+    reloadNeeded: 'The app was updated in another tab. Reload to continue.',
+    reload: 'Reload',
+  },
+  exerciseList: {
+    title: 'Exercises',
+    meta: (typeLabel: string, patternLabel: string) => `${typeLabel} \u00b7 ${patternLabel}`,
+  },
+  exerciseDetail: {
+    notFound: 'Exercise not found.',
+    unilateral: 'Trained one side at a time.',
+    video: 'Watch video',
+    fields: {
+      type: 'Type',
+      apparatus: 'Apparatus',
+      pattern: 'Pattern',
+      primary: 'Primary muscles',
+      secondary: 'Secondary muscles',
+      phase: 'Phase',
+      rest: 'Rest',
+      leadIn: 'Lead-in',
+      endOffset: 'End offset',
+      loadDirection: 'Load direction',
+    },
+    imageAlt: {
+      start: (name: string) => `${name} start position`,
+      end: (name: string) => `${name} end position`,
+    },
+    noPhoto: (name: string) => `${name} (no photo)`,
+  },
+  labels,
+};

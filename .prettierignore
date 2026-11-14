@@ -1,0 +1,13 @@
+# Package managers
+pnpm-lock.yaml
+
+# Generated and local output
+dist/
+dev-dist/
+test-results/
+playwright-report/
+.wrangler/
+.omc/
+
+# Static assets
+public/
