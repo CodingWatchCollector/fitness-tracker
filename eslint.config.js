@@ -25,6 +25,7 @@ export default tseslint.config(
     settings: { react: { version: 'detect' } },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'react-hooks/exhaustive-deps': ['error', { additionalHooks: '^useStoreQuery$' }],
       'no-restricted-imports': ['error', dexieRestriction],
       'no-restricted-syntax': [
         'error',
