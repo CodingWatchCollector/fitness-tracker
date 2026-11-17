@@ -22,14 +22,14 @@ export function DataStoreProvider({ store, children }: { store: DataStore; child
 
   useEffect(() => {
     let active = true;
-    store.ensureSeeded().then(
-      () => {
+    store
+      .ensureSeeded()
+      .then(() => {
         if (active) setStatus((s) => (s === 'loading' ? 'ready' : s));
-      },
-      () => {
+      })
+      .catch(() => {
         if (active) setStatus((s) => (s === 'loading' ? 'error' : s));
-      },
-    );
+      });
     const unsubscribe = store.onVersionChange(() => {
       if (active) setStatus('reload-needed');
     });

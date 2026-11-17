@@ -6,7 +6,7 @@ import { ExerciseImage } from '../ui/ExerciseImage';
 
 function BackLink() {
   return (
-    <Link className="back-link" to="/">
+    <Link className="back-link" to="/exercises">
       {strings.back}
     </Link>
   );

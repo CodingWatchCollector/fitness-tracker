@@ -1,15 +1,34 @@
 import { openDb } from './db';
 import { SEED_IDS, buildSeedExercises } from './seed';
+import { createWorkouts, type WorkoutsApi } from './workouts';
 import type { Exercise } from './types';
 
 export * from './types';
+export {
+  AUTO_CLOSE_AFTER_MS,
+  DEFAULT_REPS,
+  PLANNED_REST_MAX_SEC,
+  REPS_MAX,
+  isSetSaved,
+  type WorkoutStep,
+} from '../workout/machine';
+export {
+  RECENT_LIMIT,
+  WorkoutStateError,
+  type ActiveBlock,
+  type ActiveWorkout,
+  type WorkoutStateErrorCode,
+  type WorkoutsApi,
+} from './workouts';
 
 export interface DataStore {
   ensureSeeded(): Promise<void>;
   exercises: {
     list(): Promise<Exercise[]>;
     get(id: string): Promise<Exercise | undefined>;
+    recent(limit?: number): Promise<Exercise[]>;
   };
+  workouts: WorkoutsApi;
   onVersionChange(cb: () => void): () => void;
   close(): void;
 }
@@ -21,6 +40,7 @@ export function bundledImageUrl(key: string): string {
 export function openDataStore(options: { name?: string; now?: () => number } = {}): DataStore {
   const { name = 'fitness-tracker', now = Date.now } = options;
   const { db, ready, onVersionChange } = openDb(name);
+  const { workouts, recent } = createWorkouts(db, ready, now);
 
   return {
     async ensureSeeded() {
@@ -45,7 +65,9 @@ export function openDataStore(options: { name?: string; now?: () => number } = {
         const found = await db.exercises.get(id);
         return found && found.deletedAt === null ? found : undefined;
       },
+      recent,
     },
+    workouts,
     onVersionChange,
     close() {
       db.close();

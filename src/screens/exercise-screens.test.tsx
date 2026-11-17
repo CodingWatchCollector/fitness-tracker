@@ -54,7 +54,7 @@ async function seeded() {
 describe('exercise list', () => {
   it('shows the header and the 15 Exercises in order', async () => {
     const { renderAt } = await seeded();
-    renderAt('/');
+    renderAt('/exercises');
     expect(await screen.findByRole('heading', { name: strings.appName })).toBeInTheDocument();
 
     const list = await screen.findByRole('list', { name: strings.exerciseList.title });
@@ -77,7 +77,7 @@ describe('exercise detail', () => {
   it('opens Push-up from the list and goes back', async () => {
     const user = userEvent.setup();
     const { renderAt } = await seeded();
-    renderAt('/');
+    renderAt('/exercises');
     await user.click(await screen.findByRole('link', { name: /Push-up/ }));
 
     expect(await screen.findByRole('heading', { name: 'Push-up' })).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('exercise detail', () => {
     renderAt('/exercises/unknown-id');
 
     expect(await screen.findByText(strings.exerciseDetail.notFound)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: strings.back })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: strings.back })).toHaveAttribute('href', '/exercises');
   });
 
   it('shows not-found for a soft-deleted Exercise', async () => {
@@ -154,6 +154,6 @@ describe('exercise detail', () => {
     renderAt(`/exercises/${id('Squat')}`);
 
     expect(await screen.findByText(strings.exerciseDetail.notFound)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: strings.back })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: strings.back })).toHaveAttribute('href', '/exercises');
   });
 });

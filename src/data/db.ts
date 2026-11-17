@@ -14,6 +14,8 @@ import type { EquipmentItem, Exercise, ExerciseBlock, Tag, Workout, WorkoutSet }
  *   only records with custom === false && seedRevision !== null && seedRevision < SEED_REVISION,
  *   overwrites catalog fields only, keeps id, createdAt, favorite and deletedAt, and sets
  *   updatedAt = now(). MVP-a implements insert-if-absent only.
+ * - Workout rules: at most one active Workout; auto-close and Finish share one close rule (see
+ *   README.md "Data rules" and src/workout/machine.ts planClose).
  * - Never edit a shipped version(n). Index or store changes go in a new version(n+1).
  */
 export class FitnessDb extends Dexie {

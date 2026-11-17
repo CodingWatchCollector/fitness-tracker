@@ -26,7 +26,7 @@ async function expectTall(locator: ReturnType<Page['locator']>) {
 }
 
 test('works offline after the first visit', async ({ page, context }) => {
-  await page.goto(baseURL);
+  await page.goto(new URL('/exercises', baseURL).href);
   const list = page.getByRole('list', { name: strings.exerciseList.title });
   await expect(list.getByRole('listitem')).toHaveCount(15);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
@@ -36,10 +36,9 @@ test('works offline after the first visit', async ({ page, context }) => {
   await context.setOffline(true);
 
   const fetchFailed = await page.evaluate(() =>
-    fetch('/__not-precached-' + Date.now()).then(
-      () => false,
-      () => true,
-    ),
+    fetch('/__not-precached-' + Date.now())
+      .then(() => false)
+      .catch(() => true),
   );
   expect(fetchFailed).toBe(true);
 
@@ -72,4 +71,7 @@ test('works offline after the first visit', async ({ page, context }) => {
   await page.goto(new URL('/exercises/not-a-real-id', baseURL).href);
   await expect(page.getByText(strings.exerciseDetail.notFound)).toBeVisible();
   await expectTall(page.getByRole('link', { name: strings.back }));
+
+  await page.goto(baseURL);
+  await expect(page.getByRole('button', { name: strings.home.startWorkout })).toBeVisible();
 });

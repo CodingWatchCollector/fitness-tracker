@@ -158,3 +158,143 @@ a {
   align-items: center;
   min-height: var(--tap);
 }
+
+.app-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.button.primary,
+.button.secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  margin-top: 12px;
+  font-size: 1.25rem;
+  text-decoration: none;
+}
+
+.button.secondary {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--muted);
+}
+
+.button:disabled {
+  opacity: 0.5;
+}
+
+.home,
+.workout section {
+  display: flex;
+  flex-direction: column;
+}
+
+.workout-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workout-bar .button {
+  width: auto;
+  margin-top: 0;
+  min-height: var(--tap);
+  font-size: 1rem;
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+}
+
+.timer-large {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.rest-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.rest-label {
+  color: var(--muted);
+}
+
+.rest-overtime .timer {
+  color: #ff8a65;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.stepper-button {
+  min-width: 64px;
+  min-height: 64px;
+  font-size: 1.5rem;
+}
+
+.stepper-value {
+  min-width: 5rem;
+  text-align: center;
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.picker-search {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+}
+
+.picker-list,
+.set-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.picker-button {
+  width: 100%;
+  min-height: 56px;
+  text-align: left;
+}
+
+.picker-note {
+  color: var(--muted);
+}
+
+.dialog[open] {
+  width: calc(100% - 32px);
+  max-width: 480px;
+  padding: 16px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 60%);
+}

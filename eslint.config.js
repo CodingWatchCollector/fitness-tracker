@@ -33,6 +33,11 @@ export default tseslint.config(
           selector: 'ImportExpression[source.value=/^dexie/]',
           message: 'Only src/data/db.ts imports dexie.',
         },
+        {
+          selector: "CallExpression[callee.property.name='then'][arguments.length>=2]",
+          message:
+            'Use .then(onFulfilled).catch(onRejected) instead of passing a rejection handler to .then().',
+        },
       ],
     },
   },
