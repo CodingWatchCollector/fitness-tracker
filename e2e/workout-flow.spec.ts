@@ -95,3 +95,27 @@ test('the Finish dialog is modal: the page behind it is blocked and Escape close
   await expect(button(page, strings.workout.finish)).toBeFocused();
   await expect(page.getByRole('link', { name: strings.appName })).toBeVisible();
 });
+
+test('AC-6 keeps focus on the planned-rest more button across Enter presses', async ({ page }) => {
+  await startWorkoutWithPushUp(page);
+
+  const more = button(page, strings.workout.restMore);
+  const output = page.getByLabel(strings.workout.plannedRest);
+  await expect(output).toHaveText(/\d+:\d{2}/);
+  const before = parseClock((await output.textContent()) ?? '');
+
+  await more.focus();
+  await expect(more).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(output).toHaveText(strings.clock(before + 15));
+  await expect(more).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(output).toHaveText(strings.clock(before + 30));
+  await expect(more).toBeFocused();
+});
+
+function parseClock(text: string): number {
+  const [minutes, seconds] = text.trim().split(':').map(Number);
+  return minutes! * 60 + seconds!;
+}

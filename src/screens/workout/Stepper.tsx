@@ -1,4 +1,5 @@
 import { strings } from '../../strings';
+import { Button } from '../../ui/Button';
 
 interface StepperProps {
   outputLabel: string;
@@ -14,7 +15,7 @@ interface StepperProps {
 export function Stepper(props: StepperProps) {
   return (
     <div className="stepper">
-      <button
+      <Button
         type="button"
         className="button stepper-button"
         aria-label={props.lessLabel}
@@ -22,11 +23,11 @@ export function Stepper(props: StepperProps) {
         onClick={props.onLess}
       >
         {strings.stepper.decrease}
-      </button>
+      </Button>
       <output className="stepper-value" aria-label={props.outputLabel}>
         {props.display}
       </output>
-      <button
+      <Button
         type="button"
         className="button stepper-button"
         aria-label={props.moreLabel}
@@ -34,7 +35,7 @@ export function Stepper(props: StepperProps) {
         onClick={props.onMore}
       >
         {strings.stepper.increase}
-      </button>
+      </Button>
     </div>
   );
 }

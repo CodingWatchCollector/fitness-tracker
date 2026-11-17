@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useActiveWorkout } from '../app/useActiveWorkout';
 import { WorkoutStateError } from '../data';
 import { strings } from '../strings';
+import { Button } from '../ui/Button';
 
 export function HomeScreen() {
   const { state, pending, failed, run } = useActiveWorkout();
@@ -30,9 +31,9 @@ export function HomeScreen() {
         </>
       ) : (
         <>
-          <button type="button" className="button primary" disabled={pending} onClick={start}>
+          <Button type="button" className="button primary" disabled={pending} onClick={start}>
             {strings.home.startWorkout}
-          </button>
+          </Button>
           {failed && <p role="alert">{strings.home.startFailed}</p>}
         </>
       )}

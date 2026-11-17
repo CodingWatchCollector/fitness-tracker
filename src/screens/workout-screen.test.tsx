@@ -1,6 +1,6 @@
 import { act, cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Exercise } from '../data';
 import { strings } from '../strings';
 import { rawExercises } from '../test-utils/raw-idb';
@@ -77,10 +77,11 @@ describe('exercise picker', () => {
     expect(buttons.map((b) => b.textContent)).toEqual(ORDER);
     for (const b of buttons) {
       if (TIME_BASED.includes(b.textContent!)) {
-        expect(b).toBeDisabled();
+        expect(b).toHaveAttribute('aria-disabled', 'true');
+        expect(b).not.toHaveAttribute('disabled');
         expect(b).toHaveAccessibleDescription(strings.picker.timeBasedLater);
       } else {
-        expect(b).toBeEnabled();
+        expect(b).not.toHaveAttribute('aria-disabled');
       }
     }
     expect(screen.queryByRole('list', { name: strings.picker.favorites })).toBeNull();
@@ -291,13 +292,171 @@ describe('the Set loop through the UI', () => {
     renderApp(store, f.clock, '/workout');
 
     await user.click(await screen.findByRole('button', { name: W.start }));
-    expect(button(W.start)).toBeDisabled();
-    expect(button(W.endBlock.ready)).toBeDisabled();
-    expect(button(W.finish)).toBeDisabled();
-    expect(button(W.restLess)).toBeDisabled();
-    expect(button(W.restMore)).toBeDisabled();
+    expect(button(W.start)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.start)).not.toHaveAttribute('disabled');
+    expect(button(W.endBlock.ready)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.endBlock.ready)).not.toHaveAttribute('disabled');
+    expect(button(W.finish)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.finish)).not.toHaveAttribute('disabled');
+    expect(button(W.restLess)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.restLess)).not.toHaveAttribute('disabled');
+    expect(button(W.restMore)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.restMore)).not.toHaveAttribute('disabled');
+    const finish = button(W.finish);
     await act(async () => gate.resolve());
     expect(await screen.findByRole('timer', { name: W.setTimer })).toBeInTheDocument();
+    expect(finish).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('makes Done unavailable while doneSet is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    const blockId = await openPushUp(f);
+    await f.at(sec(20)).startSet(blockId);
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      doneSet: async (id) => {
+        await gate.promise;
+        return f.store.workouts.doneSet(id);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+
+    await user.click(await screen.findByRole('button', { name: W.done }));
+    expect(button(W.done)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.done)).not.toHaveAttribute('disabled');
+    await act(async () => gate.resolve());
+    expect(await screen.findByRole('status', { name: W.reps })).toBeInTheDocument();
+  });
+
+  it('makes Save unavailable while saveReps is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    const blockId = await openPushUp(f);
+    const running = await f.at(sec(20)).startSet(blockId);
+    await f.at(sec(30)).doneSet(running.blocks[0]!.sets[0]!.id);
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      saveReps: async (id, reps) => {
+        await gate.promise;
+        return f.store.workouts.saveReps(id, reps);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+
+    await user.click(await screen.findByRole('button', { name: W.save }));
+    expect(button(W.save)).toHaveAttribute('aria-disabled', 'true');
+    expect(button(W.save)).not.toHaveAttribute('disabled');
+    await act(async () => gate.resolve());
+    expect(await screen.findByRole('timer', { name: W.restTimer })).toBeInTheDocument();
+  });
+
+  it('makes Start and End block unavailable in the rest step while startSet is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await baseResting(f);
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      startSet: async (id) => {
+        await gate.promise;
+        return f.store.workouts.startSet(id);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+
+    await user.click(await screen.findByRole('button', { name: W.start }));
+    for (const name of [W.start, W.endBlock.resting]) {
+      expect(button(name)).toHaveAttribute('aria-disabled', 'true');
+      expect(button(name)).not.toHaveAttribute('disabled');
+    }
+    await act(async () => gate.resolve());
+    expect(await screen.findByRole('timer', { name: W.setTimer })).toBeInTheDocument();
+  });
+
+  it('makes rep-based Exercise buttons unavailable while openBlock is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      openBlock: async (id) => {
+        await gate.promise;
+        return f.store.workouts.openBlock(id);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+
+    const all = await screen.findByRole('list', { name: strings.picker.all });
+    await user.click(within(all).getByRole('button', { name: 'Push-up' }));
+    for (const b of within(all).getAllByRole('button')) {
+      expect(b).toHaveAttribute('aria-disabled', 'true');
+      expect(b).not.toHaveAttribute('disabled');
+    }
+    await act(async () => gate.resolve());
+    expect(await screen.findByRole('heading', { name: 'Push-up' })).toBeInTheDocument();
+  });
+
+  it('keeps focus on planned-rest more while setPlannedRest is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    const blockId = await openPushUp(f);
+    await f.at(sec(11)).setPlannedRest(blockId, 60);
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      setPlannedRest: async (id, value) => {
+        await gate.promise;
+        return f.store.workouts.setPlannedRest(id, value);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+    await screen.findByText('1:00');
+
+    button(W.restMore).focus();
+    await user.keyboard('{Enter}');
+    expect(button(W.restMore)).toHaveFocus();
+    expect(button(W.restMore)).toHaveAttribute('aria-disabled', 'true');
+    await act(async () => gate.resolve());
+    await screen.findByText('1:15');
+    expect(output(W.plannedRest)).toHaveTextContent('1:15');
+    expect(button(W.restMore)).toHaveFocus();
+    expect(button(W.restMore)).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('ignores a click on a time-based Exercise button', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    const openBlock = vi.fn(f.store.workouts.openBlock);
+    renderApp(withWorkouts(f.store, { openBlock }), f.clock, '/workout');
+
+    await user.click(await screen.findByRole('button', { name: 'Back lever' }));
+    expect(openBlock).not.toHaveBeenCalled();
+    expect(screen.getByRole('searchbox', { name: strings.picker.search })).toBeInTheDocument();
+  });
+
+  it('does not open the Finish dialog while an intent is pending', async () => {
+    const user = userEvent.setup();
+    const f = await setup();
+    await f.at(T).start();
+    await openPushUp(f);
+    const gate = deferred<void>();
+    const store = withWorkouts(f.store, {
+      startSet: async (id) => {
+        await gate.promise;
+        return f.store.workouts.startSet(id);
+      },
+    });
+    renderApp(store, f.clock, '/workout');
+
+    await user.click(await screen.findByRole('button', { name: W.start }));
+    await user.click(button(W.finish));
+    expect(screen.queryByRole('dialog', { name: W.finishDialog.title })).toBeNull();
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    await act(async () => gate.resolve());
+    await screen.findByRole('timer', { name: W.setTimer });
   });
 
   it('shows an alert and keeps the stored step when doneSet fails', async () => {
@@ -344,7 +503,9 @@ describe('steppers', () => {
     const blockId = await openPushUp(f);
     await f.at(sec(11)).setPlannedRest(blockId, sec0);
     renderApp(f.store, f.clock, '/workout');
-    expect(await screen.findByRole('button', { name })).toBeDisabled();
+    const stepper = await screen.findByRole('button', { name });
+    expect(stepper).toHaveAttribute('aria-disabled', 'true');
+    expect(stepper).not.toHaveAttribute('disabled');
   });
 
   it.each([
@@ -378,7 +539,9 @@ describe('steppers', () => {
     await f.at(sec(50)).doneSet(second.blocks[0]!.sets[1]!.id);
     renderApp(f.store, f.clock, '/workout');
 
-    expect(await screen.findByRole('button', { name })).toBeDisabled();
+    const stepper = await screen.findByRole('button', { name });
+    expect(stepper).toHaveAttribute('aria-disabled', 'true');
+    expect(stepper).not.toHaveAttribute('disabled');
     expect(output(W.reps)).toHaveTextContent(String(reps));
   });
 });

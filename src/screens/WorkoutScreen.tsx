@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useActiveWorkout } from '../app/useActiveWorkout';
 import type { ActiveWorkout } from '../data';
 import { strings } from '../strings';
+import { Button } from '../ui/Button';
 import { ExercisePicker } from './workout/ExercisePicker';
 import {
   OverallTimer,
@@ -110,7 +111,7 @@ export function WorkoutScreen() {
     <div className="workout">
       <div className="workout-bar">
         <OverallTimer startedAt={active.workout.startedAt} />
-        <button
+        <Button
           type="button"
           className="button secondary"
           ref={finishRef}
@@ -118,7 +119,7 @@ export function WorkoutScreen() {
           onClick={() => setConfirming(true)}
         >
           {strings.workout.finish}
-        </button>
+        </Button>
       </div>
       {failed && <p role="alert">{strings.workout.actionFailed}</p>}
       {stepPanel(active, pending, run)}
@@ -132,7 +133,7 @@ export function WorkoutScreen() {
           <>
             <h2 id="finish-title">{strings.workout.finishDialog.title}</h2>
             {unsaved && <p>{strings.workout.finishDialog.unsaved}</p>}
-            <button
+            <Button
               type="button"
               className="button primary"
               disabled={pending}
@@ -142,7 +143,7 @@ export function WorkoutScreen() {
               }}
             >
               {strings.workout.finishDialog.confirm}
-            </button>
+            </Button>
             <button
               type="button"
               className="button secondary"

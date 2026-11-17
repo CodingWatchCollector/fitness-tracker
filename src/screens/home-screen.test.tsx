@@ -16,7 +16,9 @@ describe('Home', () => {
     const f = await setup();
     renderApp(f.store, f.clock, '/');
 
-    expect(await screen.findByRole('button', { name: strings.home.startWorkout })).toBeEnabled();
+    expect(
+      await screen.findByRole('button', { name: strings.home.startWorkout }),
+    ).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('link', { name: strings.home.exercises })).toHaveAttribute(
       'href',
       '/exercises',
@@ -89,7 +91,9 @@ describe('Home', () => {
     renderApp(store, f.clock, '/');
 
     await user.click(await screen.findByRole('button', { name: strings.home.startWorkout }));
-    expect(screen.getByRole('button', { name: strings.home.startWorkout })).toBeDisabled();
+    const start = screen.getByRole('button', { name: strings.home.startWorkout });
+    expect(start).toHaveAttribute('aria-disabled', 'true');
+    expect(start).not.toHaveAttribute('disabled');
     await act(async () => gate.resolve());
     expect(await screen.findByRole('list', { name: strings.picker.all })).toBeInTheDocument();
   });

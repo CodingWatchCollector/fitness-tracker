@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNow } from '../../app/clock';
 import { REPS_MAX, isSetSaved, type ActiveBlock } from '../../data';
 import { strings } from '../../strings';
+import { Button } from '../../ui/Button';
 import { elapsedSec, restView } from '../../workout/machine';
 import { Stepper } from './Stepper';
 
@@ -83,12 +84,12 @@ export function ReadyPanel({
         busy={busy}
         onChange={onPlannedRest}
       />
-      <button type="button" className="button primary" disabled={busy} onClick={onStart}>
+      <Button type="button" className="button primary" disabled={busy} onClick={onStart}>
         {strings.workout.start}
-      </button>
-      <button type="button" className="button secondary" disabled={busy} onClick={onEndBlock}>
+      </Button>
+      <Button type="button" className="button secondary" disabled={busy} onClick={onEndBlock}>
         {strings.workout.endBlock.ready}
-      </button>
+      </Button>
     </section>
   );
 }
@@ -105,9 +106,9 @@ export function SetRunningPanel({
       <h2>{active.exercise.name}</h2>
       <h3>{strings.workout.setHeading(setNumber)}</h3>
       <SetTimer startedAt={startedAt} />
-      <button type="button" className="button primary" disabled={busy} onClick={onDone}>
+      <Button type="button" className="button primary" disabled={busy} onClick={onDone}>
         {strings.workout.done}
-      </button>
+      </Button>
     </section>
   );
 }
@@ -134,9 +135,9 @@ function RepsEntry({
         onLess={() => setReps(Math.max(0, reps - 1))}
         onMore={() => setReps(Math.min(REPS_MAX, reps + 1))}
       />
-      <button type="button" className="button primary" disabled={busy} onClick={() => onSave(reps)}>
+      <Button type="button" className="button primary" disabled={busy} onClick={() => onSave(reps)}>
         {strings.workout.save}
-      </button>
+      </Button>
     </>
   );
 }
@@ -201,12 +202,12 @@ export function RestPanel({
           <li key={set.id}>{strings.workout.setLine(i + 1, set.reps ?? 0)}</li>
         ))}
       </ul>
-      <button type="button" className="button primary" disabled={busy} onClick={onStart}>
+      <Button type="button" className="button primary" disabled={busy} onClick={onStart}>
         {strings.workout.start}
-      </button>
-      <button type="button" className="button secondary" disabled={busy} onClick={onEndBlock}>
+      </Button>
+      <Button type="button" className="button secondary" disabled={busy} onClick={onEndBlock}>
         {strings.workout.endBlock.resting}
-      </button>
+      </Button>
     </section>
   );
 }

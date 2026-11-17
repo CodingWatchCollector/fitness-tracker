@@ -3,6 +3,7 @@ import { useDataStore } from '../../app/DataStoreContext';
 import { useStoreQuery } from '../../app/useStoreQuery';
 import type { Exercise } from '../../data';
 import { strings } from '../../strings';
+import { Button } from '../../ui/Button';
 
 function ExerciseList({
   label,
@@ -23,7 +24,7 @@ function ExerciseList({
         const timeBased = exercise.type !== 'rep';
         return (
           <li key={exercise.id}>
-            <button
+            <Button
               type="button"
               className="button picker-button"
               disabled={disabled || timeBased}
@@ -31,7 +32,7 @@ function ExerciseList({
               onClick={() => onPick(exercise.id)}
             >
               {exercise.name}
-            </button>
+            </Button>
           </li>
         );
       })}

@@ -49,6 +49,11 @@ export default tseslint.config(
           message:
             'Use a native <dialog> opened with showModal() instead of role="dialog" or "alertdialog".',
         },
+        {
+          selector: "JSXOpeningElement[name.name='button'] > JSXAttribute[name.name='disabled']",
+          message:
+            'Use <Button disabled> from src/ui/Button.tsx; it sets aria-disabled so the button stays focusable.',
+        },
       ],
     },
   },

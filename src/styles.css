@@ -182,7 +182,7 @@ a {
   border: 1px solid var(--muted);
 }
 
-.button:disabled {
+.button[aria-disabled='true'] {
   opacity: 0.5;
 }
 
