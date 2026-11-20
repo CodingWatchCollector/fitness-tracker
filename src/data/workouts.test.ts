@@ -4,6 +4,7 @@ import { WorkoutStateError, openDataStore, type ExerciseBlock } from './index';
 import { rawExercises } from '../test-utils/raw-idb';
 import {
   DAY,
+  H3,
   T,
   assertClosed,
   baseResting,
@@ -41,6 +42,7 @@ describe('start and the single active Workout', () => {
       },
       blocks: [],
       step: { kind: 'picking' },
+      autoCloseAt: T + H3,
     });
     expect(await f.store.workouts.current()).toEqual(started);
 
@@ -638,5 +640,43 @@ describe('resume from storage (data level)', () => {
     } finally {
       other.close();
     }
+  });
+});
+
+describe('autoCloseAt', () => {
+  it('is the start time plus 3 h on a fresh Workout and equals current()', async () => {
+    const f = await setup();
+    const started = await f.at(T).start();
+    expect(started.autoCloseAt).toBe(T + H3);
+    expect(started).toEqual(await f.at(T).current());
+  });
+
+  it('follows the latest write of the base Workout', async () => {
+    const f = await setup();
+    await baseResting(f);
+    expect((await f.at(sec(60)).current())?.autoCloseAt).toBe(sec(55) + H3);
+  });
+
+  it('is still open 1 ms before it and closed at it', async () => {
+    const f = await setup();
+    await baseResting(f);
+    expect((await f.at(sec(55) + H3 - 1).current())?.autoCloseAt).toBe(sec(55) + H3);
+    expect(await f.at(sec(55) + H3).current()).toBeNull();
+  });
+
+  it('moves with a planned rest change', async () => {
+    const f = await setup();
+    const { blockId } = await baseResting(f);
+    const changed = await f.at(sec(1000)).setPlannedRest(blockId, 75);
+    expect(changed.autoCloseAt).toBe(sec(1000) + H3);
+    expect(changed).toEqual(await f.at(sec(1000)).current());
+  });
+
+  it('counts a soft-deleted block as activity', async () => {
+    const f = await setup();
+    await f.at(T).start();
+    const opened = await f.at(sec(5)).openBlock(f.id('Dips'));
+    await f.at(sec(500)).endBlock(opened.blocks[0]!.block.id);
+    expect((await f.at(sec(600)).current())?.autoCloseAt).toBe(sec(500) + H3);
   });
 });

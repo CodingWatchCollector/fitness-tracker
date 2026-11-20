@@ -1,3 +1,4 @@
+import { act } from '@testing-library/react';
 import { expect } from 'vitest';
 import {
   openDataStore,
@@ -122,4 +123,11 @@ export async function assertClosed(name: string, workoutId: string) {
       if (next) expect(s.restEndedAt).toBe(next.startedAt);
     });
   }
+}
+
+export function tick(f: Fixture, ms: number) {
+  return act(() => {
+    f.clock.set(ms);
+    f.clock.tick();
+  });
 }

@@ -62,6 +62,7 @@ export const strings = {
     const seconds = totalSec % 60;
     return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
   },
+  header: { workoutInProgress: 'Workout in progress' },
   home: {
     startWorkout: 'Start Workout',
     resumeWorkout: 'Resume Workout',

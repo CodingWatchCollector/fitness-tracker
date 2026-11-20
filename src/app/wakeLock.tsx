@@ -75,16 +75,16 @@ export function useWakeLock(active: boolean): void {
         });
     };
 
+    const releaseHeld = () => {
+      if (!handle) return;
+      const held = handle;
+      handle = null;
+      releaseQuietly(held);
+    };
+
     const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        acquire();
-        return;
-      }
-      if (handle) {
-        const held = handle;
-        handle = null;
-        releaseQuietly(held);
-      }
+      if (document.visibilityState === 'visible') acquire();
+      else releaseHeld();
     };
 
     document.addEventListener('visibilitychange', onVisibility);
@@ -92,11 +92,7 @@ export function useWakeLock(active: boolean): void {
     return () => {
       disposed = true;
       document.removeEventListener('visibilitychange', onVisibility);
-      if (handle) {
-        const held = handle;
-        handle = null;
-        releaseQuietly(held);
-      }
+      releaseHeld();
     };
   }, [active, port]);
 }

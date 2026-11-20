@@ -308,3 +308,20 @@ test('AC-8 beeps at 10 s before rest end, then long beep, vibration and flash at
   await expectMinHeight(button(page, strings.workout.endBlock.resting), 64);
   await expectMinHeight(start, 64);
 });
+
+test('AC-9 header shows a Workout in progress link on Exercise screens that returns to the Workout', async ({
+  page,
+}) => {
+  await startWorkoutWithPushUp(page);
+  await page.goto(new URL('/exercises', baseURL).href);
+  await expect(page.getByRole('list', { name: strings.exerciseList.title })).toBeVisible();
+
+  const link = page
+    .getByRole('banner')
+    .getByRole('link', { name: strings.header.workoutInProgress, exact: true });
+  await expect(link).toBeVisible();
+  await expectMinHeight(link, 64);
+
+  await link.click();
+  await expect(page.getByRole('heading', { name: 'Push-up', exact: true })).toBeVisible();
+});

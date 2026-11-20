@@ -5,7 +5,7 @@ import { AlertsProvider, type Alerts } from '../app/alerts';
 import { ClockProvider } from '../app/clock';
 import { DataStoreProvider } from '../app/DataStoreContext';
 import { WakeLockProvider, type WakeLockPort } from '../app/wakeLock';
-import type { DataStore } from '../data';
+import type { ActiveWorkout, DataStore } from '../data';
 import { fakeWakeLock, recordingAlerts } from './fake-ports';
 import { LocationProbe } from './location-probe';
 import type { TestClock } from './test-clock';
@@ -47,4 +47,20 @@ export function deferred<T>() {
     resolve = r;
   });
   return { promise, resolve };
+}
+
+export function countingWorkouts(
+  store: DataStore,
+  impl?: (call: number) => Promise<ActiveWorkout | null>,
+  overrides: Partial<DataStore['workouts']> = {},
+) {
+  let count = 0;
+  const wrapped = withWorkouts(store, {
+    ...overrides,
+    current: () => {
+      count += 1;
+      return impl ? impl(count) : store.workouts.current();
+    },
+  });
+  return { store: wrapped, calls: () => count };
 }

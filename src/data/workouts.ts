@@ -1,4 +1,5 @@
 import {
+  AUTO_CLOSE_AFTER_MS,
   PLANNED_REST_MAX_SEC,
   REPS_MAX,
   byOrder,
@@ -7,6 +8,7 @@ import {
   isLive,
   isSetSaved,
   isStale,
+  lastActivity,
   pickRepsSuggestion,
   planClose,
   type ClosePlan,
@@ -44,6 +46,7 @@ export interface ActiveWorkout {
   workout: Workout;
   blocks: ActiveBlock[];
   step: WorkoutStep;
+  autoCloseAt: number;
 }
 
 export const RECENT_LIMIT = 5;
@@ -131,6 +134,7 @@ export function createWorkouts(db: FitnessDb, ready: Promise<void>, now: () => n
   async function snapshot(workout: Workout): Promise<ActiveWorkout> {
     const records = await loadRecords(workout);
     const derived = deriveStep(records);
+    const autoCloseAt = lastActivity(records) + AUTO_CLOSE_AFTER_MS;
     const liveBlocks = records.blocks.filter(isLive).sort(byOrder);
     const blocks: ActiveBlock[] = [];
     for (const block of liveBlocks) {
@@ -142,11 +146,11 @@ export function createWorkouts(db: FitnessDb, ready: Promise<void>, now: () => n
         sets: records.sets.filter((s) => s.blockId === block.id && isLive(s)).sort(byOrder),
       });
     }
-    if (derived.kind !== 'reps-pending') return { workout, blocks, step: derived };
+    if (derived.kind !== 'reps-pending') return { workout, blocks, step: derived, autoCloseAt };
     const stepBlock = blocks.find((b) => b.block.id === derived.blockId)!;
     const first = await lastWorkoutFirstSet(stepBlock.block.exerciseId, workout.id);
     const repsSuggestion = pickRepsSuggestion(stepBlock.sets, derived.setId, first);
-    return { workout, blocks, step: { ...derived, repsSuggestion } };
+    return { workout, blocks, step: { ...derived, repsSuggestion }, autoCloseAt };
   }
 
   async function mutate(
