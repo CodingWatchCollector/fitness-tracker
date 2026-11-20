@@ -35,14 +35,20 @@ pnpm preview
 
 ## Deploy
 
-The app deploys to Cloudflare Pages. Run these in your own terminal, logged in to Cloudflare:
+The app deploys to Cloudflare Pages.
+
+Every push to `main`, including a merged PR, deploys automatically. The `deploy` job in `.github/workflows/ci.yml` runs after `checks` and `e2e` pass. It needs two repo secrets: `CLOUDFLARE_API_TOKEN` (a token with Account > Cloudflare Pages > Edit) and `CLOUDFLARE_ACCOUNT_ID`.
+
+To deploy by hand, run these in your own terminal, logged in to Cloudflare:
 
 ```sh
-wrangler pages project create fitness-tracker   # once
+wrangler pages project create fitness-tracker   # once, also needed before the first CI deploy
 pnpm run pages:deploy
 ```
 
 `pnpm deploy` is a pnpm built-in, so the script is named `pages:deploy`.
+
+The project was created with wrangler, so it is a Direct Upload project. Cloudflare can't switch it to Git integration, which is why CI does the deploy.
 
 ## Data rules
 
