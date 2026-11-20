@@ -298,3 +298,43 @@ a {
 .dialog::backdrop {
   background: rgb(0 0 0 / 60%);
 }
+
+.rest-timer .timer-large {
+  display: flex;
+  align-items: center;
+  min-height: 6.6rem;
+}
+
+.rest-countdown .timer-large {
+  font-size: 6rem;
+}
+
+.rest-overtime .timer-large {
+  font-size: 4rem;
+}
+
+.rest-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--accent);
+  animation: rest-flash-fade 1s linear forwards;
+}
+
+@keyframes rest-flash-fade {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rest-flash {
+    animation: none;
+    opacity: 0.4;
+  }
+}

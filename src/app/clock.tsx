@@ -36,8 +36,12 @@ export function ClockProvider({ clock, children }: { clock: Clock; children: Rea
   return <ClockContext.Provider value={clock}>{children}</ClockContext.Provider>;
 }
 
+export function useClock(): Clock {
+  return useContext(ClockContext);
+}
+
 export function useNow(): number {
-  const clock = useContext(ClockContext);
+  const clock = useClock();
   const [, setTick] = useState(0);
   useEffect(() => clock.subscribe(() => setTick((n) => n + 1)), [clock]);
   return clock.now();

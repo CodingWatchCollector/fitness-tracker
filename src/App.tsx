@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { AlertsProvider, browserAlerts, type Alerts } from './app/alerts';
 import { ClockProvider, browserClock, type Clock } from './app/clock';
 import { DataStoreProvider } from './app/DataStoreContext';
+import { WakeLockProvider, browserWakeLock, type WakeLockPort } from './app/wakeLock';
 import type { DataStore } from './data';
 import { ExerciseDetailScreen } from './screens/ExerciseDetailScreen';
 import { ExerciseListScreen } from './screens/ExerciseListScreen';
@@ -21,13 +23,27 @@ export function AppRoutes() {
   );
 }
 
-export function App({ store, clock = browserClock }: { store: DataStore; clock?: Clock }) {
+export function App({
+  store,
+  clock = browserClock,
+  alerts = browserAlerts,
+  wakeLock = browserWakeLock,
+}: {
+  store: DataStore;
+  clock?: Clock;
+  alerts?: Alerts;
+  wakeLock?: WakeLockPort;
+}) {
   return (
     <BrowserRouter>
       <ClockProvider clock={clock}>
-        <DataStoreProvider store={store}>
-          <AppRoutes />
-        </DataStoreProvider>
+        <AlertsProvider alerts={alerts}>
+          <WakeLockProvider port={wakeLock}>
+            <DataStoreProvider store={store}>
+              <AppRoutes />
+            </DataStoreProvider>
+          </WakeLockProvider>
+        </AlertsProvider>
       </ClockProvider>
     </BrowserRouter>
   );

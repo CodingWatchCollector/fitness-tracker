@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useRestAlerts } from '../app/alerts';
+import { useWakeLock } from '../app/wakeLock';
 import { useActiveWorkout } from '../app/useActiveWorkout';
 import type { ActiveWorkout } from '../data';
 import { strings } from '../strings';
 import { Button } from '../ui/Button';
+import { restInputOf } from '../workout/restAlerts';
 import { ExercisePicker } from './workout/ExercisePicker';
 import {
   OverallTimer,
@@ -86,6 +89,9 @@ export function WorkoutScreen() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const wasConfirming = useRef(false);
+  const value = state.kind === 'ready' ? state.value : null;
+  useWakeLock(value !== null);
+  const { flashing } = useRestAlerts(value ? restInputOf(value.step) : null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -109,6 +115,7 @@ export function WorkoutScreen() {
 
   return (
     <div className="workout">
+      {flashing && <div className="rest-flash" aria-hidden="true" />}
       <div className="workout-bar">
         <OverallTimer startedAt={active.workout.startedAt} />
         <Button

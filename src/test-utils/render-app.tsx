@@ -1,20 +1,34 @@
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../App';
+import { AlertsProvider, type Alerts } from '../app/alerts';
 import { ClockProvider } from '../app/clock';
 import { DataStoreProvider } from '../app/DataStoreContext';
+import { WakeLockProvider, type WakeLockPort } from '../app/wakeLock';
 import type { DataStore } from '../data';
+import { fakeWakeLock, recordingAlerts } from './fake-ports';
 import { LocationProbe } from './location-probe';
 import type { TestClock } from './test-clock';
 
-export function renderApp(store: DataStore, clock: TestClock, route: string) {
+export function renderApp(
+  store: DataStore,
+  clock: TestClock,
+  route: string,
+  ports: { alerts?: Alerts; wakeLock?: WakeLockPort } = {},
+) {
+  const alerts = ports.alerts ?? recordingAlerts().alerts;
+  const wakeLock = ports.wakeLock ?? fakeWakeLock('grant').port;
   return render(
     <MemoryRouter initialEntries={[route]}>
       <ClockProvider clock={clock}>
-        <DataStoreProvider store={store}>
-          <AppRoutes />
-          <LocationProbe />
-        </DataStoreProvider>
+        <AlertsProvider alerts={alerts}>
+          <WakeLockProvider port={wakeLock}>
+            <DataStoreProvider store={store}>
+              <AppRoutes />
+              <LocationProbe />
+            </DataStoreProvider>
+          </WakeLockProvider>
+        </AlertsProvider>
       </ClockProvider>
     </MemoryRouter>,
   );

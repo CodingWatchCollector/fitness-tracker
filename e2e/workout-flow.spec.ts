@@ -119,3 +119,192 @@ function parseClock(text: string): number {
   const [minutes, seconds] = text.trim().split(':').map(Number);
   return minutes! * 60 + seconds!;
 }
+
+type AlertLogEntry = {
+  type: 'resume' | 'tone' | 'vibrate';
+  hz?: number;
+  ms?: number;
+  pattern?: number[];
+};
+
+declare global {
+  interface Window {
+    __restAlertLog: AlertLogEntry[];
+  }
+}
+
+function installAlertRecorders() {
+  const log: AlertLogEntry[] = [];
+  window.__restAlertLog = log;
+
+  function createOscillator() {
+    const self = {
+      type: 'sine',
+      hz: 0,
+      startWhen: 0,
+      frequency: {
+        set value(v: number) {
+          self.hz = v;
+        },
+        get value() {
+          return self.hz;
+        },
+        setValueAtTime(v: number) {
+          self.hz = v;
+        },
+      },
+      connect() {},
+      start(when = 0) {
+        self.startWhen = when;
+      },
+      stop(when = 0) {
+        log.push({ type: 'tone', hz: self.hz, ms: Math.round((when - self.startWhen) * 1000) });
+      },
+    };
+    return self;
+  }
+
+  const param = () => ({
+    value: 1,
+    setValueAtTime() {},
+    linearRampToValueAtTime() {},
+    exponentialRampToValueAtTime() {},
+  });
+
+  class FakeAudioContext {
+    state = 'suspended';
+    currentTime = 0;
+    destination = {};
+    resume() {
+      this.state = 'running';
+      log.push({ type: 'resume' });
+      return Promise.resolve();
+    }
+    createOscillator() {
+      return createOscillator();
+    }
+    createGain() {
+      return { gain: param(), connect() {} };
+    }
+  }
+
+  (window as unknown as { AudioContext: unknown }).AudioContext = FakeAudioContext;
+  Navigator.prototype.vibrate = (pattern: Iterable<number> | number) => {
+    log.push({ type: 'vibrate', pattern: [...(pattern as Iterable<number>)] });
+    return true;
+  };
+}
+
+const readAlertLog = (page: Page) => page.evaluate(() => window.__restAlertLog);
+
+async function expectMinHeight(locator: ReturnType<Page['locator']>, min: number, width = 0) {
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeGreaterThanOrEqual(min);
+  expect(box!.width).toBeGreaterThanOrEqual(width);
+}
+
+test('AC-8 beeps at 10 s before rest end, then long beep, vibration and flash at the end, once after a reload', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.addInitScript(installAlertRecorders);
+  await startWorkoutWithPushUp(page);
+
+  const more = button(page, strings.workout.restMore);
+  const less = button(page, strings.workout.restLess);
+  const start = button(page, strings.workout.start);
+  for (let i = 0; i < 4; i++) await less.click();
+  await expect(page.getByLabel(strings.workout.plannedRest)).toHaveText('0:30');
+  await expectMinHeight(start, 64);
+  await expectMinHeight(less, 64, 64);
+  await expectMinHeight(more, 64, 64);
+
+  await start.click();
+  const setTimer = page.getByRole('timer', { name: strings.workout.setTimer });
+  expect(await setTimer.evaluate((el) => getComputedStyle(el).fontSize)).toBe('56px');
+  await expectMinHeight(button(page, strings.workout.done), 64);
+
+  await button(page, strings.workout.done).click();
+  await expectMinHeight(button(page, strings.workout.save), 64);
+  await button(page, strings.workout.save).click();
+
+  const restTimer = page.getByRole('timer', { name: strings.workout.restTimer });
+  await expect(restTimer).toBeVisible();
+  await expect(page.getByText(strings.workout.restPhase.countdown, { exact: true })).toBeVisible();
+  expect(await restTimer.evaluate((el) => getComputedStyle(el).fontSize)).toBe('96px');
+
+  const first = parseClock((await restTimer.textContent()) ?? '');
+  await expect
+    .poll(async () => parseClock((await restTimer.textContent()) ?? ''), { timeout: 5_000 })
+    .toBeLessThan(first);
+
+  await expect
+    .poll(
+      async () =>
+        (await readAlertLog(page)).filter((e) => e.type === 'tone' && e.ms === 200).length,
+      {
+        timeout: 25_000,
+      },
+    )
+    .toBeGreaterThan(0);
+  const beforeReload = await readAlertLog(page);
+  expect(beforeReload.filter((e) => e.type === 'tone' && e.ms === 200)).toEqual([
+    { type: 'tone', hz: 880, ms: 200 },
+  ]);
+  expect(beforeReload.filter((e) => e.type === 'tone' && e.ms === 800)).toEqual([]);
+  expect(beforeReload.filter((e) => e.type === 'vibrate')).toEqual([]);
+
+  await page.reload();
+  const heading = page.getByRole('heading', { name: 'Push-up', exact: true });
+  await expect(heading).toBeVisible();
+  await expect(page.getByRole('timer', { name: strings.workout.restTimer })).toBeVisible();
+  await expect(page.getByText(strings.workout.restPhase.countdown, { exact: true })).toBeVisible();
+
+  await heading.click();
+  expect((await readAlertLog(page)).filter((e) => e.type === 'resume').length).toBeGreaterThan(0);
+
+  await start.scrollIntoViewIfNeeded();
+  const box = (await start.boundingBox())!;
+  const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const probe = await page.waitForFunction(
+    ({ x, y }) => {
+      const flash = document.querySelector('.rest-flash');
+      if (!flash) return null;
+      return {
+        pointerEvents: getComputedStyle(flash).pointerEvents,
+        hit: document.elementFromPoint(x, y)?.closest('button')?.textContent,
+        activeIsFlash: document.activeElement === flash,
+      };
+    },
+    centre,
+    { polling: 'raf', timeout: 25_000 },
+  );
+  expect(await probe.jsonValue()).toEqual({
+    pointerEvents: 'none',
+    hit: strings.workout.start,
+    activeIsFlash: false,
+  });
+
+  const afterReload = await readAlertLog(page);
+  expect(afterReload.filter((e) => e.type === 'tone' && e.ms === 800)).toEqual([
+    { type: 'tone', hz: 880, ms: 800 },
+  ]);
+  expect(afterReload.filter((e) => e.type === 'vibrate')).toEqual([
+    { type: 'vibrate', pattern: [400, 100, 400] },
+  ]);
+  expect(afterReload.filter((e) => e.type === 'tone' && e.ms === 200)).toEqual([]);
+
+  await expect(page.getByText(strings.workout.restPhase.overtime, { exact: true })).toBeVisible({
+    timeout: 25_000,
+  });
+  const overtime = page.getByRole('timer', { name: strings.workout.restTimer });
+  await expect(overtime).toHaveText(/^\+\d+:\d{2}$/);
+  expect(await overtime.evaluate((el) => getComputedStyle(el).fontSize)).toBe('64px');
+  const ob = (await overtime.boundingBox())!;
+  expect(ob.x).toBeGreaterThanOrEqual(0);
+  expect(ob.x + ob.width).toBeLessThanOrEqual(412);
+
+  await expectMinHeight(button(page, strings.workout.endBlock.resting), 64);
+  await expectMinHeight(start, 64);
+});
