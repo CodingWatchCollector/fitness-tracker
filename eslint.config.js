@@ -41,6 +41,11 @@ export default tseslint.config(
             'Use .then(onFulfilled).catch(onRejected) instead of passing a rejection handler to .then().',
         },
         {
+          selector: "UnaryExpression[operator='void']",
+          message:
+            'Do not prefix calls with void. Call the function plainly, or chain .catch() when it can reject.',
+        },
+        {
           selector: "JSXAttribute[name.name='aria-modal']",
           message: 'Use a native <dialog> opened with showModal() instead of aria-modal.',
         },

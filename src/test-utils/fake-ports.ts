@@ -6,9 +6,15 @@ export type AlertCall = 'unlock' | 'restWarning' | 'restEnd';
 export function recordingAlerts() {
   const calls: AlertCall[] = [];
   const alerts: Alerts = {
-    unlock: () => void calls.push('unlock'),
-    restWarning: () => void calls.push('restWarning'),
-    restEnd: () => void calls.push('restEnd'),
+    unlock: () => {
+      calls.push('unlock');
+    },
+    restWarning: () => {
+      calls.push('restWarning');
+    },
+    restEnd: () => {
+      calls.push('restEnd');
+    },
   };
   return {
     alerts,

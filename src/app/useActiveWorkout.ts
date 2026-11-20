@@ -66,7 +66,7 @@ export function useActiveWorkout() {
       if (requested || clock.now() < retryAt) return;
       if (document.visibilityState !== 'visible' || inFlight.current) return;
       requested = true;
-      void reread().then((ok) => {
+      reread().then((ok) => {
         if (ok) return;
         requested = false;
         retryAt = (failedBefore ? clock.now() : autoCloseAt) + TICK_RETRY_AFTER_MS;
@@ -78,7 +78,7 @@ export function useActiveWorkout() {
   useEffect(() => {
     if (state.kind !== 'ready') return;
     const onVisibility = () => {
-      if (document.visibilityState === 'visible' && !inFlight.current) void reread();
+      if (document.visibilityState === 'visible' && !inFlight.current) reread();
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
