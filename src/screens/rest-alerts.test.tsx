@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { strings } from '../strings';
 import { recordingAlerts } from '../test-utils/fake-ports';
 import { renderApp } from '../test-utils/render-app';
+import { settle } from '../test-utils/settle';
 import { resetVisibility, setVisibility } from '../test-utils/visibility';
 import {
   T,
@@ -12,16 +13,11 @@ import {
   openStoreOn,
   sec,
   setup,
-  type Fixture,
+  tick,
 } from '../test-utils/workout-fixtures';
 
 const W = strings.workout;
 const flash = () => document.querySelector('.rest-flash');
-const tick = (f: Fixture, ms: number) =>
-  act(() => {
-    f.clock.set(ms);
-    f.clock.tick();
-  });
 const restTimer = () => screen.findByRole('timer', { name: W.restTimer });
 const plannedRest = () => screen.getByRole('status', { name: W.plannedRest });
 
@@ -176,10 +172,12 @@ describe('rest alerts on the Workout screen', () => {
   it('plays nothing while hidden and flashes an end that is at most 60 s late', async () => {
     const { f, rec } = await renderBase();
     await restTimer();
+    await settle();
     await act(async () => setVisibility('hidden'));
     await tick(f, sec(130));
     await tick(f, sec(141));
     expect(rec.alertCalls()).toEqual([]);
+    await settle();
     await act(async () => setVisibility('visible'));
     await tick(f, sec(150));
     expect(rec.alertCalls()).toEqual([]);
@@ -189,8 +187,10 @@ describe('rest alerts on the Workout screen', () => {
   it('does not flash an end that is more than 60 s late', async () => {
     const { f, rec } = await renderBase();
     await restTimer();
+    await settle();
     await act(async () => setVisibility('hidden'));
     await tick(f, sec(141));
+    await settle();
     await act(async () => setVisibility('visible'));
     await tick(f, T + 200_001);
     expect(rec.alertCalls()).toEqual([]);

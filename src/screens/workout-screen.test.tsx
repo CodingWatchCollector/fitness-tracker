@@ -14,6 +14,7 @@ import {
   openStoreOn,
   sec,
   setup,
+  tick,
   type Fixture,
 } from '../test-utils/workout-fixtures';
 
@@ -547,21 +548,15 @@ describe('steppers', () => {
 });
 
 describe('timers', () => {
-  const tick = (f: Fixture, ms: number) =>
-    act(() => {
-      f.clock.set(ms);
-      f.clock.tick();
-    });
-
   it('shows the overall timer', async () => {
     const f = await setup();
     await f.at(T).start();
     renderApp(f.store, f.clock, '/workout');
     await screen.findByRole('timer', { name: W.overallTimer });
 
-    tick(f, sec(754));
+    await tick(f, sec(754));
     expect(timer(W.overallTimer)).toHaveTextContent('12:34');
-    tick(f, sec(3723));
+    await tick(f, sec(3723));
     expect(timer(W.overallTimer)).toHaveTextContent('1:02:03');
   });
 
@@ -571,7 +566,7 @@ describe('timers', () => {
     await f.at(sec(100)).startSet(blockId);
     renderApp(f.store, f.clock, '/workout');
     await screen.findByRole('timer', { name: W.setTimer });
-    tick(f, sec(145));
+    await tick(f, sec(145));
     expect(timer(W.setTimer)).toHaveTextContent('0:45');
   });
 
@@ -584,13 +579,13 @@ describe('timers', () => {
     renderApp(f.store, f.clock, '/workout');
     await screen.findByRole('timer', { name: W.restTimer });
 
-    tick(f, sec(200) + 1200);
+    await tick(f, sec(200) + 1200);
     expect(timer(W.restTimer)).toHaveTextContent('1:29');
     expect(screen.getByText(W.restPhase.countdown)).toBeInTheDocument();
-    tick(f, sec(290));
+    await tick(f, sec(290));
     expect(timer(W.restTimer)).toHaveTextContent('+0:00');
     expect(screen.getByText(W.restPhase.overtime)).toBeInTheDocument();
-    tick(f, sec(295));
+    await tick(f, sec(295));
     expect(timer(W.restTimer)).toHaveTextContent('+0:05');
   });
 

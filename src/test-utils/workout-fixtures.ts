@@ -9,6 +9,7 @@ import {
   type WorkoutSet,
 } from '../data';
 import { rawStore } from './raw-idb';
+import { settle } from './settle';
 import { testClock, type TestClock } from './test-clock';
 
 export const T = 1_700_000_000_000;
@@ -125,8 +126,9 @@ export async function assertClosed(name: string, workoutId: string) {
   }
 }
 
-export function tick(f: Fixture, ms: number) {
-  return act(() => {
+export async function tick(f: Fixture, ms: number): Promise<void> {
+  await settle();
+  await act(() => {
     f.clock.set(ms);
     f.clock.tick();
   });

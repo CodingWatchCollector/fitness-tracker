@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { useEffect, useReducer } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../App';
 import { AlertsProvider, type Alerts } from '../app/alerts';
@@ -8,7 +9,14 @@ import { WakeLockProvider, type WakeLockPort } from '../app/wakeLock';
 import type { ActiveWorkout, DataStore } from '../data';
 import { fakeWakeLock, recordingAlerts } from './fake-ports';
 import { LocationProbe } from './location-probe';
+import { registerFlush } from './settle';
 import type { TestClock } from './test-clock';
+
+function EffectFlush() {
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => registerFlush(forceUpdate), [forceUpdate]);
+  return null;
+}
 
 export function renderApp(
   store: DataStore,
@@ -26,6 +34,7 @@ export function renderApp(
             <DataStoreProvider store={store}>
               <AppRoutes />
               <LocationProbe />
+              <EffectFlush />
             </DataStoreProvider>
           </WakeLockProvider>
         </AlertsProvider>

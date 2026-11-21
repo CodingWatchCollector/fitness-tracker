@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { strings } from '../strings';
 import { fakeWakeLock } from '../test-utils/fake-ports';
 import { renderApp } from '../test-utils/render-app';
+import { settle } from '../test-utils/settle';
 import { resetVisibility, setVisibility } from '../test-utils/visibility';
 import { baseResting, closeFixtures, sec, setup } from '../test-utils/workout-fixtures';
 
@@ -37,14 +38,17 @@ describe('Wake Lock on the Workout screen', () => {
     await waitFor(() => expect(fake.requests()).toBe(1));
     expect(fake.handles[0]!.releases).toBe(0);
 
+    await settle();
     await act(async () => setVisibility('hidden'));
     expect(fake.handles[0]!.releases).toBe(1);
     expect(fake.requests()).toBe(1);
 
+    await settle();
     await act(async () => setVisibility('visible'));
     await waitFor(() => expect(fake.requests()).toBe(2));
     expect(fake.handles[1]!.releases).toBe(0);
 
+    await settle();
     await act(async () => setVisibility('visible'));
     expect(fake.requests()).toBe(2);
 
@@ -59,7 +63,7 @@ describe('Wake Lock on the Workout screen', () => {
     const fake = fakeWakeLock('grant');
     await renderBase(route, fake);
     await screen.findByRole('banner');
-    await act(async () => {});
+    await settle();
     expect(fake.requests()).toBe(0);
   });
 
@@ -96,9 +100,11 @@ describe('Wake Lock on the Workout screen', () => {
     const fake = fakeWakeLock('manual');
     await renderBase('/workout', fake);
     await screen.findByRole('timer', { name: W.restTimer });
+    await settle();
     await act(async () => setVisibility('hidden'));
     await act(async () => fake.resolve(0));
     expect(fake.handles[0]!.releases).toBe(1);
+    await settle();
     await act(async () => setVisibility('visible'));
     expect(fake.requests()).toBe(2);
   });
@@ -108,6 +114,7 @@ describe('Wake Lock on the Workout screen', () => {
     await renderBase('/workout', fake);
     expect(await screen.findByRole('timer', { name: W.restTimer })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).toBeNull();
+    await settle();
     await act(async () => setVisibility('hidden'));
     await act(async () => setVisibility('visible'));
     expect(fake.requests()).toBe(2);
@@ -123,10 +130,12 @@ describe('Wake Lock on the Workout screen', () => {
       await screen.findByRole('timer', { name: W.restTimer });
       await waitFor(() => expect(fake.requests()).toBe(1));
 
+      await settle();
       await act(async () => setVisibility('hidden'));
       expect(fake.handles[0]!.releases).toBe(1);
       expect(screen.queryByRole('alert')).toBeNull();
 
+      await settle();
       await act(async () => setVisibility('visible'));
       expect(fake.requests()).toBe(2);
       expect(fake.handles[1]!.releases).toBe(0);

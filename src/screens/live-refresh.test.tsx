@@ -5,6 +5,7 @@ import type { ActiveWorkout } from '../data';
 import { strings } from '../strings';
 import { fakeWakeLock } from '../test-utils/fake-ports';
 import { countingWorkouts, deferred, renderApp } from '../test-utils/render-app';
+import { settle } from '../test-utils/settle';
 import { resetVisibility, setVisibility } from '../test-utils/visibility';
 import {
   H3,
@@ -25,8 +26,6 @@ afterEach(() => {
   closeFixtures();
   resetVisibility();
 });
-
-const settle = () => act(async () => {});
 
 async function renderBase() {
   setVisibility('visible');
@@ -117,12 +116,14 @@ describe('live auto-close on the tick', () => {
     const c = countingWorkouts(f.store);
     renderApp(c.store, f.clock, '/workout');
     await screen.findByRole('timer', { name: W.restTimer });
+    await settle();
     act(() => setVisibility('hidden'));
     await tick(f, AUTO_CLOSE);
     await settle();
     expect(c.calls()).toBe(1);
     expect(screen.getByRole('timer', { name: W.restTimer })).toBeInTheDocument();
 
+    await settle();
     act(() => setVisibility('visible'));
     await waitFor(() => expect(probe().textContent).toBe('/'));
   });
@@ -138,11 +139,13 @@ describe('re-read when the page becomes visible', () => {
     f.clock.set(sec(100));
     await other.workouts.finish();
 
+    await settle();
     act(() => setVisibility('hidden'));
     await settle();
     expect(c.calls()).toBe(1);
     expect(screen.getByRole('timer', { name: W.restTimer })).toBeInTheDocument();
 
+    await settle();
     act(() => setVisibility('visible'));
     await waitFor(() => expect(probe().textContent).toBe('/'));
   });
@@ -156,6 +159,7 @@ describe('re-read when the page becomes visible', () => {
     f.clock.set(sec(100));
     await other.workouts.start();
 
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     await screen.findByText(strings.home.inProgress);
@@ -169,6 +173,7 @@ describe('re-read when the page becomes visible', () => {
     const c = countingWorkouts(f.store, () => first.promise);
     renderApp(c.store, f.clock, '/workout');
     await waitFor(() => expect(c.calls()).toBe(1));
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     await settle();
@@ -194,6 +199,7 @@ describe('read ordering and failures', () => {
     );
     renderApp(c.store, f.clock, '/workout');
     await screen.findByRole('button', { name: W.start });
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     expect(c.calls()).toBe(2);
@@ -211,6 +217,7 @@ describe('read ordering and failures', () => {
     const c = countingWorkouts(f.store, undefined, { startSet: () => never });
     renderApp(c.store, f.clock, '/workout');
     await user.click(await screen.findByRole('button', { name: W.start }));
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     await settle();
@@ -250,6 +257,7 @@ describe('read ordering and failures', () => {
     );
     renderApp(c.store, f.clock, '/workout');
     await screen.findByRole('timer', { name: W.restTimer });
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     await waitFor(() => expect(c.calls()).toBe(2));
@@ -260,6 +268,7 @@ describe('read ordering and failures', () => {
     const other = openStoreOn(f.name, f.clock);
     f.clock.set(sec(100));
     await other.workouts.finish();
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     await waitFor(() => expect(probe().textContent).toBe('/'));
@@ -319,6 +328,7 @@ describe('read ordering and failures', () => {
     await screen.findByText(strings.home.inProgress);
     await tick(f, AUTO_CLOSE);
     await waitFor(() => expect(c.calls()).toBe(2));
+    await settle();
     act(() => setVisibility('hidden'));
     act(() => setVisibility('visible'));
     expect(await screen.findByRole('button', { name: strings.home.startWorkout })).toBeVisible();
