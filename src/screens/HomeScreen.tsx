@@ -11,13 +11,14 @@ export function HomeScreen() {
   if (state.kind === 'loading') return <p>{strings.status.loading}</p>;
   if (state.kind === 'error') return <p>{strings.status.error}</p>;
 
-  async function start() {
-    const result = await run((store) => store.workouts.start());
-    const alreadyActive =
-      !result.ok &&
-      result.error instanceof WorkoutStateError &&
-      result.error.code === 'workout-already-active';
-    if (result.ok || alreadyActive) navigate('/workout');
+  function start() {
+    run((store) => store.workouts.start()).then((result) => {
+      const alreadyActive =
+        !result.ok &&
+        result.error instanceof WorkoutStateError &&
+        result.error.code === 'workout-already-active';
+      if (result.ok || alreadyActive) navigate('/workout');
+    });
   }
 
   return (

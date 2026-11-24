@@ -25,8 +25,15 @@ export default tseslint.config(
     files: ['**/*.{ts,tsx}'],
     plugins: { react, 'react-hooks': reactHooks },
     settings: { react: { version: 'detect' } },
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: true } },
+      ],
       'react-hooks/exhaustive-deps': ['error', { additionalHooks: '^useStoreQuery$' }],
       'no-restricted-imports': ['error', dexieRestriction],
       'no-restricted-syntax': [

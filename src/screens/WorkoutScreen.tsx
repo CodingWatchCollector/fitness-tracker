@@ -23,12 +23,23 @@ function stepPanel(
 ) {
   const { step } = active;
   if (step.kind === 'picking') {
-    return <ExercisePicker busy={busy} onPick={(id) => run((s) => s.workouts.openBlock(id))} />;
+    return (
+      <ExercisePicker
+        busy={busy}
+        onPick={(id) => {
+          run((s) => s.workouts.openBlock(id));
+        }}
+      />
+    );
   }
   const block = active.blocks.find((b) => b.block.id === step.blockId);
   if (!block) return null;
-  const plannedRest = (sec: number) => run((s) => s.workouts.setPlannedRest(step.blockId, sec));
-  const endBlock = () => run((s) => s.workouts.endBlock(step.blockId));
+  const plannedRest = (sec: number) => {
+    run((s) => s.workouts.setPlannedRest(step.blockId, sec));
+  };
+  const endBlock = () => {
+    run((s) => s.workouts.endBlock(step.blockId));
+  };
   const setNumber = (setId: string) => block.sets.findIndex((set) => set.id === setId) + 1;
 
   switch (step.kind) {
@@ -37,7 +48,9 @@ function stepPanel(
         <ReadyPanel
           active={block}
           busy={busy}
-          onStart={() => run((s) => s.workouts.startSet(step.blockId))}
+          onStart={() => {
+            run((s) => s.workouts.startSet(step.blockId));
+          }}
           onEndBlock={endBlock}
           onPlannedRest={plannedRest}
         />
@@ -49,7 +62,9 @@ function stepPanel(
           busy={busy}
           setNumber={setNumber(step.setId)}
           startedAt={step.startedAt}
-          onDone={() => run((s) => s.workouts.doneSet(step.setId))}
+          onDone={() => {
+            run((s) => s.workouts.doneSet(step.setId));
+          }}
         />
       );
     case 'reps-pending':
@@ -61,7 +76,9 @@ function stepPanel(
           setNumber={setNumber(step.setId)}
           suggestion={step.repsSuggestion}
           endedAt={step.endedAt}
-          onSave={(reps) => run((s) => s.workouts.saveReps(step.setId, reps))}
+          onSave={(reps) => {
+            run((s) => s.workouts.saveReps(step.setId, reps));
+          }}
           onPlannedRest={plannedRest}
         />
       );
@@ -71,7 +88,9 @@ function stepPanel(
           active={block}
           busy={busy}
           endedAt={step.endedAt}
-          onStart={() => run((s) => s.workouts.startSet(step.blockId))}
+          onStart={() => {
+            run((s) => s.workouts.startSet(step.blockId));
+          }}
           onEndBlock={endBlock}
           onPlannedRest={plannedRest}
         />
