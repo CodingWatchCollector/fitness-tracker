@@ -25,7 +25,9 @@ export type WorkoutStateErrorCode =
   | 'invalid-transition'
   | 'exercise-not-found'
   | 'exercise-not-rep-based'
-  | 'invalid-value';
+  | 'invalid-value'
+  | 'equipment-not-found'
+  | 'duplicate-name';
 
 export class WorkoutStateError extends Error {
   readonly code: WorkoutStateErrorCode;

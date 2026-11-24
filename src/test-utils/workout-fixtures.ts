@@ -3,8 +3,10 @@ import { expect } from 'vitest';
 import {
   openDataStore,
   type DataStore,
+  type EquipmentItem,
   type Exercise,
   type ExerciseBlock,
+  type Tag,
   type Workout,
   type WorkoutSet,
 } from '../data';
@@ -26,7 +28,16 @@ export interface Fixture {
   workouts: ReturnType<typeof rawStore<Workout>>;
   blocks: ReturnType<typeof rawStore<ExerciseBlock>>;
   sets: ReturnType<typeof rawStore<WorkoutSet>>;
+  equipmentItems: ReturnType<typeof rawStore<EquipmentItem>>;
+  tagRecords: ReturnType<typeof rawStore<Tag>>;
   dump(): Promise<{ workouts: Workout[]; blocks: ExerciseBlock[]; sets: WorkoutSet[] }>;
+  dumpAll(): Promise<{
+    workouts: Workout[];
+    blocks: ExerciseBlock[];
+    sets: WorkoutSet[];
+    equipmentItems: EquipmentItem[];
+    tags: Tag[];
+  }>;
   at(ms: number): DataStore['workouts'];
 }
 
@@ -52,8 +63,15 @@ export async function setup(options: { name?: string; start?: number } = {}): Pr
   const workouts = rawStore<Workout>(name, 'workouts');
   const blocks = rawStore<ExerciseBlock>(name, 'exerciseBlocks');
   const sets = rawStore<WorkoutSet>(name, 'sets');
+  const equipmentItems = rawStore<EquipmentItem>(name, 'equipmentItems');
+  const tagRecords = rawStore<Tag>(name, 'tags');
   const byId = <R extends { id: string }>(list: R[]) =>
     [...list].sort((a, b) => (a.id < b.id ? -1 : 1));
+  const dump = async () => ({
+    workouts: byId(await workouts.getAll()),
+    blocks: byId(await blocks.getAll()),
+    sets: byId(await sets.getAll()),
+  });
   return {
     name,
     clock,
@@ -63,11 +81,14 @@ export async function setup(options: { name?: string; start?: number } = {}): Pr
     workouts,
     blocks,
     sets,
-    async dump() {
+    equipmentItems,
+    tagRecords,
+    dump,
+    async dumpAll() {
       return {
-        workouts: byId(await workouts.getAll()),
-        blocks: byId(await blocks.getAll()),
-        sets: byId(await sets.getAll()),
+        ...(await dump()),
+        equipmentItems: byId(await equipmentItems.getAll()),
+        tags: byId(await tagRecords.getAll()),
       };
     },
     at(ms) {

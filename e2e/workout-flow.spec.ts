@@ -325,3 +325,54 @@ test('AC-9 header shows a Workout in progress link on Exercise screens that retu
   await link.click();
   await expect(page.getByRole('heading', { name: 'Push-up', exact: true })).toBeVisible();
 });
+
+test('AC-3 the Equipment add and delete dialogs are modal: the page behind is blocked, Escape closes them and focus returns', async ({
+  page,
+}) => {
+  await page.goto(baseURL);
+  await page.getByRole('link', { name: 'Equipment items', exact: true }).click();
+  await expect(page).toHaveURL(/\/equipment$/);
+  await expect(page.getByRole('heading', { name: 'Equipment items', exact: true })).toBeVisible();
+
+  const add = button(page, 'Add Equipment item');
+  await add.click();
+  const addDialog = page.getByRole('dialog', { name: 'New Equipment item', exact: true });
+  await expect(addDialog).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toBeFocused();
+  expect(await addDialog.evaluate((el) => el.matches(':modal'))).toBe(true);
+  await page.getByRole('link', { name: strings.appName }).click({ force: true });
+  await expect(addDialog).toBeVisible();
+  await expect(page).toHaveURL(/\/equipment$/);
+
+  await page.keyboard.press('Escape');
+  await expect(addDialog).toBeHidden();
+  await expect(add).toBeFocused();
+
+  await add.click();
+  await expect(addDialog).toBeVisible();
+  await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Red band');
+  await page.getByRole('spinbutton', { name: 'Nominal weight (kg)', exact: true }).fill('15');
+  await button(page, 'Save').click();
+  await expect(addDialog).toBeHidden();
+  const list = page.getByRole('list', { name: 'Equipment items', exact: true });
+  await expect(list.getByText('Red band', { exact: true })).toBeVisible();
+  await expect(list.getByText('15 kg', { exact: true })).toBeVisible();
+
+  const remove = button(page, 'Delete Red band');
+  await remove.click();
+  const deleteDialog = page.getByRole('dialog', { name: 'Delete Red band?', exact: true });
+  await expect(deleteDialog).toBeVisible();
+  await expect(deleteDialog.getByText('Sets that used it keep it.', { exact: true })).toBeVisible();
+  await expect(button(page, 'Keep')).toBeFocused();
+  expect(await deleteDialog.evaluate((el) => el.matches(':modal'))).toBe(true);
+  await page.getByRole('link', { name: strings.appName }).click({ force: true });
+  await button(page, 'Add Equipment item').click({ force: true });
+  await expect(deleteDialog).toBeVisible();
+  await expect(addDialog).toBeHidden();
+  await expect(page).toHaveURL(/\/equipment$/);
+
+  await page.keyboard.press('Escape');
+  await expect(deleteDialog).toBeHidden();
+  await expect(remove).toBeFocused();
+  await expect(list.getByText('Red band', { exact: true })).toBeVisible();
+});

@@ -40,6 +40,9 @@ export function HomeScreen() {
       <Link className="button secondary" to="/exercises">
         {strings.home.exercises}
       </Link>
+      <Link className="button secondary" to="/equipment">
+        {strings.home.equipment}
+      </Link>
     </div>
   );
 }

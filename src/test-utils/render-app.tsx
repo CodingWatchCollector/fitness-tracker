@@ -50,6 +50,13 @@ export function withWorkouts(
   return { ...store, workouts: { ...store.workouts, ...overrides } };
 }
 
+export function withEquipment(
+  store: DataStore,
+  overrides: Partial<DataStore['equipment']>,
+): DataStore {
+  return { ...store, equipment: { ...store.equipment, ...overrides } };
+}
+
 export function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((r) => {

@@ -1,5 +1,6 @@
 import { openDb } from './db';
 import { SEED_IDS, buildSeedExercises } from './seed';
+import { createEquipment, type EquipmentApi } from './equipment';
 import { createWorkouts, type WorkoutsApi } from './workouts';
 import type { Exercise } from './types';
 
@@ -12,6 +13,17 @@ export {
   isSetSaved,
   type WorkoutStep,
 } from '../workout/machine';
+export {
+  EQUIPMENT_NAME_MAX,
+  LOAD_KG_MAX,
+  LOAD_KG_MIN,
+  isValidEquipmentInput,
+  isValidKg,
+  labelKey,
+  normalizeLabel,
+  type EquipmentApi,
+  type EquipmentItemInput,
+} from './equipment';
 export {
   RECENT_LIMIT,
   WorkoutStateError,
@@ -29,6 +41,7 @@ export interface DataStore {
     recent(limit?: number): Promise<Exercise[]>;
   };
   workouts: WorkoutsApi;
+  equipment: EquipmentApi;
   onVersionChange(cb: () => void): () => void;
   close(): void;
 }
@@ -68,6 +81,7 @@ export function openDataStore(options: { name?: string; now?: () => number } = {
       recent,
     },
     workouts,
+    equipment: createEquipment(db, ready, now),
     onVersionChange,
     close() {
       db.close();

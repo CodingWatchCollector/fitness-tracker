@@ -4,6 +4,7 @@ import { ClockProvider, browserClock, type Clock } from './app/clock';
 import { DataStoreProvider } from './app/DataStoreContext';
 import { WakeLockProvider, browserWakeLock, type WakeLockPort } from './app/wakeLock';
 import type { DataStore } from './data';
+import { EquipmentScreen } from './screens/EquipmentScreen';
 import { ExerciseDetailScreen } from './screens/ExerciseDetailScreen';
 import { ExerciseListScreen } from './screens/ExerciseListScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -17,6 +18,7 @@ export function AppRoutes() {
         <Route index element={<HomeScreen />} />
         <Route path="exercises" element={<ExerciseListScreen />} />
         <Route path="exercises/:id" element={<ExerciseDetailScreen />} />
+        <Route path="equipment" element={<EquipmentScreen />} />
         <Route path="workout" element={<WorkoutScreen />} />
       </Route>
     </Routes>

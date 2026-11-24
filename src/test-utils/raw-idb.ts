@@ -28,7 +28,7 @@ async function withStore<T>(
   }
 }
 
-export type RawStoreName = 'workouts' | 'exerciseBlocks' | 'sets';
+export type RawStoreName = 'workouts' | 'exerciseBlocks' | 'sets' | 'equipmentItems' | 'tags';
 
 export function rawStore<T>(name: string, storeName: RawStoreName) {
   return {

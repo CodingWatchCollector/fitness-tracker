@@ -48,6 +48,7 @@ function stubStore(
       endBlock: unused,
       finish: unused,
     },
+    equipment: { list: () => Promise.resolve([]), add: unused, update: unused, remove: unused },
     onVersionChange,
     close: () => undefined,
   };

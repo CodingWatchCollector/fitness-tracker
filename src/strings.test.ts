@@ -30,4 +30,14 @@ describe('strings', () => {
     expect(strings.workout.overtime('0:05')).toBe('+0:05');
     expect(strings.workout.endBlock.ready).not.toBe(strings.workout.endBlock.resting);
   });
+
+  it('formats Equipment item text', () => {
+    expect(strings.home.equipment).toBe('Equipment items');
+    expect(strings.equipment.nominal(15)).toBe('15 kg');
+    expect(strings.equipment.nominal(7.5)).toBe('7.5 kg');
+    expect(strings.equipment.deleted('Red band')).toBe('Red band (deleted)');
+    expect(strings.equipment.edit('Red band')).toBe('Edit Red band');
+    expect(strings.equipment.delete('Red band')).toBe('Delete Red band');
+    expect(strings.equipment.deleteDialog.title('Red band')).toBe('Delete Red band?');
+  });
 });
